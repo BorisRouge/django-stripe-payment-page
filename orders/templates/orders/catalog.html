@@ -1,0 +1,11 @@
+<!--catalog-->
+{% block content %}
+    <h1>Каталог</h1>
+{% for item in items %}
+    <a href="{% url 'item' item.id%}">{{item}}</a>
+<form>{{form.as_table}}
+<button type="submit" name="add-to-cart" >Добавить в корзину</button></form>
+
+{% endfor %}
+{% endblock content%}
+
