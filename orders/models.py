@@ -1,8 +1,5 @@
 from django.db import models
-
-
-class Order(models.Model):
-    pass
+from django.conf import settings
 
 
 class Item(models.Model):
@@ -10,22 +7,24 @@ class Item(models.Model):
     description = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=20, decimal_places=2)
 
+
     def __str__(self):
         return self.name
 
 
+class Order(models.Model):
+    pass
+    # items = models.ManyToManyField(OrderItem)
+    #
+    # def get_total_amount(self):
+    #     amount = 0
+    #     for item in self.items.all():
+    #         amount += item.get
+
+
 class OrderItem(models.Model):
-    order_id = models.ForeignKey(Order, on_delete=models.CASCADE)
-    item_id = models.ForeignKey(Item, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    discount = models.IntegerField()
-    tax = models.IntegerField()
-    final_price = models.DecimalField(max_digits=20, decimal_places=2)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=0)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, null=True)
 
 
-class Discount(models.Model):
-    pass
-
-
-class Tax(models.Model):
-    pass

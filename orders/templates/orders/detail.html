@@ -8,6 +8,8 @@
         {% csrf_token %}
         <input type="number" min="0" name="quantity">Количество</input>
         <p></p>
-        <button type="submit" value='{{item.id}}' name='add'>В корзину</button>
+        <button type="submit"
+                value='{{item.id}}'
+                name='added-item-id'>В корзину</button>
     </form>
 </div>

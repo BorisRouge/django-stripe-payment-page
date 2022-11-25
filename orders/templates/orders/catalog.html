@@ -3,8 +3,14 @@
     <h1>Каталог</h1>
 {% for item in items %}
     <a href="{% url 'item' item.id%}">{{item}}</a>
-<form>{{form.as_table}}
-<button type="submit" name="add-to-cart" >Добавить в корзину</button></form>
+<form action="/add-to-cart" method="POST">
+    {% csrf_token %}
+    {{form.as_table}}
+<button type="submit"
+        value={{item.id}}
+        name='added-item-id'>Добавить в корзину
+</button>
+</form>
 
 {% endfor %}
 {% endblock content%}

@@ -8,5 +8,6 @@ urlpatterns = [
     path('create-checkout-session', views.create_checkout_session),
     path('success', views.redirect_after_transaction),
     path('cancel', views.redirect_after_transaction),
+    path('add-to-cart', views.add_to_cart, name='add-to-cart'),
     path('', RedirectView.as_view(url='catalog')),
     ]
