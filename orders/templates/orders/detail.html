@@ -6,7 +6,8 @@
     <p>{{item.price}}</p>
     <form action="/add-to-cart" method="POST">
         {% csrf_token %}
-        <input type="number" min="0" name="quantity">Количество</input>
+        {{form}}
+
         <p></p>
         <button type="submit"
                 value='{{item.id}}'

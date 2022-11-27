@@ -9,5 +9,7 @@ urlpatterns = [
     path('success', views.redirect_after_transaction),
     path('cancel', views.redirect_after_transaction),
     path('add-to-cart', views.add_to_cart, name='add-to-cart'),
+    path('checkout', views.CheckoutView.as_view(), name='checkout'),
+    path('cancel-order', views.cancel_order, name='cancel-order'),
     path('', RedirectView.as_view(url='catalog')),
     ]

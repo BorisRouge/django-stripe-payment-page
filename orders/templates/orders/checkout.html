@@ -1,0 +1,23 @@
+<!--checkout-->
+{% block content %}
+<h1>Ваш заказ</h1>
+{{active_order.name}}
+{% for item in checkout_items %}
+<p>{{item.checkout_view}}</p>
+{% endfor %}
+Итого по заказу: {{total}}
+<form action="catalog" method="GET">
+    <button type="submit">Назад к каталогу</button>
+</form>
+<form action="create-checkout-session" method="POST">
+    {% csrf_token %}
+    <input type='hidden' value='{{active_order.name}}' name="active_order">
+    <button type="submit" value={{total}} name="total" >Купить</button>
+</form>
+
+<form action="cancel-order" method="POST">
+    {% csrf_token %}
+    <input type='hidden' value='{{active_order.name}}' name="active_order">
+    <button type="submit" value={{active_order.id}} name="order_id" >Отменить заказ</button>
+</form>
+{% endblock %}
