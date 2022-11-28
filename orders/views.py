@@ -7,8 +7,10 @@ import stripe
 
 
 class Catalog(View):
-    '''Возвращает список всех товаров.'''
-    def get (self, request):
+    """Возвращает список всех товаров."""
+    def get(self, request):
+        if 'order' not in request.session.keys():
+            print('nam')
         context = {'items': Item.objects.all(),
                    'form': CatalogForm,
                    }
@@ -27,6 +29,7 @@ class ItemView(View):
 
 
 class CheckoutView(View):
+    """Оформление заказа."""
     def get(self, request):
         active_order = Order().get_active_order(request)
         total = active_order.get_total(request)
@@ -42,11 +45,12 @@ class CheckoutView(View):
 
 
 def create_checkout_session(request):
+    """Выход на Stripe Checkout."""
     stripe.api_key = os.getenv('stripe_api_key')
     order_name = request.POST.get('active_order')
     total = request.POST.get('total')
     session = stripe.checkout.Session.create(
-        line_items=[{'price_data': {  # TODO: parse ordered items here?
+        line_items=[{'price_data': {
             'product_data': {'name': order_name},
             "unit_amount": int(float(total))*100,
             "currency": 'RUB'},
@@ -61,30 +65,32 @@ def create_checkout_session(request):
 
 
 def payment_successful(request):
+    """Stripe Checkout Session - успешен,
+     статус заказа - оплачен, заказ отвязан от сессии."""
     active_order = Order.get_active_order(request)
     active_order.paid = True
     active_order.total = active_order.get_total(request)
     active_order.save()
-    del request.session['order']  # TODO: make it a method in the model
+    Order.deactivate_order(request)
     return render(request,
                   template_name='orders/success.html',
                   context={'text': 'Заказ успешно оформлен.'})
 
 
 def payment_cancelled(request):
-    options = {'/success': 'Заказ успешно оформлен.',
-               '/cancel': 'Платеж отменен.', }
+    """Stripe Checkout Session - отменен,
+    заказ остается приязанным к сессии."""
     return render(request,
                   template_name='orders/redirect_after_transaction.html',
-                  context={'text': options[request.get_full_path()]})
+                  context={'text': 'Платеж отменен.'})
 
 
 def add_to_cart(request):
-    '''Пополнение корзины.'''
+    """Пополнение заказа. Если позиция уже есть в заказе,
+     то количество увеличивается на выбранное значение."""
     quantity = int(request.POST.get('quantity'))
     item = get_object_or_404(Item, pk=request.POST.get(f'added-item-id'))
     active_order = Order.get_active_order(request)
-    # Проверяем, есть ли уже позиция в корзине.
     order_item, created = OrderItem.objects.get_or_create(item=item,
                                                           order=active_order)
     if created:
@@ -96,7 +102,6 @@ def add_to_cart(request):
 
 
 def cancel_order(request):
-    del request.session['order']  #TODO: make it a method in the model
+    """Сброс заказа."""
+    Order.deactivate_order(request)
     return redirect('catalog')
-
-

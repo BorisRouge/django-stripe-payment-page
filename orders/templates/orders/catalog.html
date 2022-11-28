@@ -3,7 +3,7 @@
 <h1>Каталог</h1>
 {% for item in items %}
     <a href="{% url 'item' item.id%}">{{item}}</a>
-    <br>Цена: {{item.price}} RUB</br>
+    <br>Цена: {{item.price}} RUB
     <form action="/add-to-cart" method="POST">
     {% csrf_token %}
     {{form.as_table}}

@@ -15,5 +15,3 @@ class CatalogForm(forms.Form):
             widget=forms.NumberInput,
             min_value=1,
         )
-
-

@@ -6,6 +6,7 @@ class DiscountAdmin(admin.ModelAdmin):
     list_display = ['name', 'promocode', 'percent_off', 'active', 'visible', ]
     exclude = ['stripe_id']
 
+
 class ItemAdmin(admin.ModelAdmin):
     pass
 
@@ -15,11 +16,10 @@ class OrderItemInline(admin.TabularInline):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    inlines = [OrderItemInline,]
+    inlines = [OrderItemInline, ]
 
 
-admin.site.register(Discount,DiscountAdmin)
+admin.site.register(Discount, DiscountAdmin)
 admin.site.register(Item, ItemAdmin)
 admin.site.register(OrderItem)
 admin.site.register(Order, OrderAdmin)
-
