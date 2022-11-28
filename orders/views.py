@@ -1,23 +1,23 @@
 import os
-from uuid import uuid4
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
-from django.views.decorators.csrf import csrf_exempt
-from .models import Order, Item, OrderItem
+from .models import Order, Item, OrderItem, Discount
 from .forms import CatalogForm, DetailForm
 import stripe
 
 
-# Create your views here.
-
 class Catalog(View):
+    '''Возвращает список всех товаров.'''
     def get (self, request):
         context = {'items': Item.objects.all(),
-                   'form': CatalogForm, }
-        return render(request, template_name='orders/catalog.html', context=context,)
+                   'form': CatalogForm,
+                   }
+        return render(request, template_name='orders/catalog.html',
+                      context=context,)
 
 
 class ItemView(View):
+    """Информация о выбранном товаре."""
     def get(self, request, item_id):
         context = {'item': Item.objects.get(pk=item_id),
                    'form': DetailForm}
@@ -31,16 +31,16 @@ class CheckoutView(View):
         active_order = Order().get_active_order(request)
         total = active_order.get_total(request)
         checkout_items = OrderItem.objects.filter(order=active_order)
+        discount = Discount.visible_in_checkout()
         return render(request,
                       context={'checkout_items': checkout_items,
                                'total': total,
-                               'active_order': {'name': active_order.name,
-                                                'id': active_order.id, },
+                               'active_order': active_order,
+                               'discount': discount
                                },
                       template_name='orders/checkout.html')
 
 
-@csrf_exempt
 def create_checkout_session(request):
     stripe.api_key = os.getenv('stripe_api_key')
     order_name = request.POST.get('active_order')
@@ -53,27 +53,40 @@ def create_checkout_session(request):
             "quantity": 1,
         }],
         mode='payment',
+        allow_promotion_codes=True,
         success_url='http://localhost:8000/success',
         cancel_url='http://localhost:8000/cancel',
     )
     return redirect(session.url, code=303)
 
 
-def redirect_after_transaction(request):
+def payment_successful(request):
+    active_order = Order.get_active_order(request)
+    active_order.paid = True
+    active_order.total = active_order.get_total(request)
+    active_order.save()
+    del request.session['order']  # TODO: make it a method in the model
+    return render(request,
+                  template_name='orders/success.html',
+                  context={'text': 'Заказ успешно оформлен.'})
+
+
+def payment_cancelled(request):
     options = {'/success': 'Заказ успешно оформлен.',
                '/cancel': 'Платеж отменен.', }
     return render(request,
                   template_name='orders/redirect_after_transaction.html',
                   context={'text': options[request.get_full_path()]})
 
-# TODO: it's an 'order' or a 'cart'?
-def add_to_cart(request): # TODO: checkout should deactivate the order from session
+
+def add_to_cart(request):
     '''Пополнение корзины.'''
     quantity = int(request.POST.get('quantity'))
     item = get_object_or_404(Item, pk=request.POST.get(f'added-item-id'))
     active_order = Order.get_active_order(request)
     # Проверяем, есть ли уже позиция в корзине.
-    order_item, created = OrderItem.objects.get_or_create(item=item, order=active_order)
+    order_item, created = OrderItem.objects.get_or_create(item=item,
+                                                          order=active_order)
     if created:
         order_item.quantity = quantity
     else:
@@ -83,7 +96,7 @@ def add_to_cart(request): # TODO: checkout should deactivate the order from sess
 
 
 def cancel_order(request):
-    del request.session['order']
+    del request.session['order']  #TODO: make it a method in the model
     return redirect('catalog')
 
 

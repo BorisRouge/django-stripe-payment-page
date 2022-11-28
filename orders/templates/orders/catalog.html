@@ -3,16 +3,15 @@
 <h1>Каталог</h1>
 {% for item in items %}
     <a href="{% url 'item' item.id%}">{{item}}</a>
-    <br>Цена: {{item.price}}</br>
-<form action="/add-to-cart" method="POST">
+    <br>Цена: {{item.price}} RUB</br>
+    <form action="/add-to-cart" method="POST">
     {% csrf_token %}
-
     {{form.as_table}}
-<button type="submit"
+    <button type="submit"
         value={{item.id}}
         name='added-item-id' >Добавить в корзину
-</button>
-</form>
+    </button>
+    </form>
 {% endfor %}
 
 <form action="checkout" method="GET">

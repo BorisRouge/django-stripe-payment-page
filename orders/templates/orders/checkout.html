@@ -4,15 +4,23 @@
 {{active_order.name}}
 {% for item in checkout_items %}
 <p>{{item.checkout_view}}</p>
+{% empty %} <p>Корзина пустая.</p>
 {% endfor %}
-Итого по заказу: {{total}}
+<p><strong>Итого по заказу: {{total}} RUB</strong>
+<br>
+<sup>Скидка {{discount.percent_off}}%
+    по промокоду: {{discount.promocode}}</sup></p>
 <form action="catalog" method="GET">
     <button type="submit">Назад к каталогу</button>
 </form>
+
+{% if checkout_items %}
 <form action="create-checkout-session" method="POST">
     {% csrf_token %}
     <input type='hidden' value='{{active_order.name}}' name="active_order">
+
     <button type="submit" value={{total}} name="total" >Купить</button>
+
 </form>
 
 <form action="cancel-order" method="POST">
@@ -20,4 +28,6 @@
     <input type='hidden' value='{{active_order.name}}' name="active_order">
     <button type="submit" value={{active_order.id}} name="order_id" >Отменить заказ</button>
 </form>
+{% endif %}
+
 {% endblock %}
