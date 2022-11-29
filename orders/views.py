@@ -56,8 +56,8 @@ def create_checkout_session(request):
         }],
         mode='payment',
         allow_promotion_codes=True,
-        success_url='/success',
-        cancel_url='/cancel',
+        success_url='http://borisrouge.ru/success',
+        cancel_url='http://borisrouge.ru/cancel',
     )
     return redirect(session.url, code=303)
 

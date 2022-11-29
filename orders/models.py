@@ -4,8 +4,6 @@ import stripe
 from datetime import datetime
 from django.db import models
 from django.core.exceptions import ValidationError
-from django.contrib.messages import add_message
-
 
 
 class Item(models.Model):
