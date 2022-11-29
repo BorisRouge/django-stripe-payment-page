@@ -1,7 +1,11 @@
 import os
+import re
 import stripe
-from django.db import models
 from datetime import datetime
+from django.db import models
+from django.core.exceptions import ValidationError
+from django.contrib.messages import add_message
+
 
 
 class Item(models.Model):
@@ -81,17 +85,25 @@ class Discount(models.Model):
     name = models.CharField(max_length=55, blank=False)
     stripe_id = models.CharField(max_length=55, default='Automatically assigned')
     promocode = models.CharField(max_length=55, blank=False)
-    percent_off = models.IntegerField(blank=False)
+    percent_off = models.IntegerField(blank=False,)
     active = models.BooleanField(default=True)
     visible = models.BooleanField(default=True)
 
     def __str__(self):
         return f'{self.name}'
 
+    def clean(self):
+        self.percent_off = abs(self.percent_off)
+        if self.percent_off == 0:
+            raise ValidationError('Поле percent_off должно быть больше 0.')
+        self.promocode = re.sub('[^a-zA-Z]+', '', self.promocode)
+        if Discount.objects.filter(promocode=self.promocode):
+            raise ValidationError('Такой промокод уже есть.')
+
     def save(self, *args, **kwargs):
         """Связка скидки в БД и скидки Stripify"""
-        super(Discount, self).save(*args, **kwargs)
         self.stripify()
+        super(Discount, self).save(*args, **kwargs)
 
     def stripify(self):
         """Создание скидки в Stripify."""
