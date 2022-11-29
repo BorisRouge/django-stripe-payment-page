@@ -37,7 +37,6 @@ class Order(models.Model):
         if 'order' not in request.session.keys():
             order = Order.create(request)
             request.session['order'] = order.id
-            print(order.id)
         return Order.objects.get(pk=request.session['order'])
 
     @staticmethod
@@ -101,7 +100,6 @@ class Discount(models.Model):
                                       percent_off=self.percent_off,)
         stripe.PromotionCode.create(coupon=coupon.id, code=self.promocode)
         self.stripe_id = coupon.id
-        print(f'Stripified, stripe_id: {self.stripe_id}, coupon_id: {coupon.id}')
         return coupon
 
     @staticmethod

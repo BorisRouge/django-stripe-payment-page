@@ -9,8 +9,6 @@ import stripe
 class Catalog(View):
     """Возвращает список всех товаров."""
     def get(self, request):
-        if 'order' not in request.session.keys():
-            print('nam')
         context = {'items': Item.objects.all(),
                    'form': CatalogForm,
                    }
@@ -58,8 +56,8 @@ def create_checkout_session(request):
         }],
         mode='payment',
         allow_promotion_codes=True,
-        success_url='http://localhost:8000/success',
-        cancel_url='http://localhost:8000/cancel',
+        success_url='/success',
+        cancel_url='/cancel',
     )
     return redirect(session.url, code=303)
 
